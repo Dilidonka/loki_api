@@ -69,24 +69,24 @@ def test_loki_query_range():
 
 def test_get_lines_count():
     loki = Loki(limit=10)
-    res = loki.get_lines_count({'job': good_job_name}, some_time_ago, now)
+    res = loki.get_lines_count('{job="%s"}' % good_job_name, some_time_ago, now)
     assert type(res) is int
     assert res > 0
-    res = loki.get_lines_count({'job': bad_job_name}, some_time_ago, now)
+    res = loki.get_lines_count('{job="%s"}' % bad_job_name, some_time_ago, now)
     assert type(res) is int
     assert res == 0
 
 
 def test_loki_get_streams():
     loki = Loki(limit=1000)
-    streams = loki._get_streams_batch({'job': good_job_name}, now - timedelta(minutes=30), now) # pyright: ignore
+    streams = loki._get_streams_batch('{job="%s"}' % good_job_name, now - timedelta(minutes=30), now) # pyright: ignore
     assert len(streams) > 0
-    streams = loki._get_streams_batch({'job': bad_job_name}, now - timedelta(minutes=5), now) # pyright: ignore
+    streams = loki._get_streams_batch('{job="%s"}' % bad_job_name, now - timedelta(minutes=5), now) # pyright: ignore
     assert len(streams) == 0
 
     lines_limit = 10000
     batch_size = 5000
     l = 0
-    for stream in loki.iterate_streams({'job': good_job_name}, now - timedelta(minutes=30), now, lines_limit=lines_limit):
+    for stream in loki.iterate_streams('{job="%s"}' % good_job_name, now - timedelta(minutes=30), now, lines_limit=lines_limit):
         l += len(stream.values)
     assert l >= lines_limit < lines_limit+batch_size
