@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
-from typing import Any, List
+from typing import Any
 import pytest
 from loki import Loki, LokiQueryError, LokiStream, LokiMatrix
 import pytz
+
+from loki.models import LokiVector
 
 now = datetime.now(tz=pytz.timezone('Europe/Moscow'))
 some_time_ago = now - timedelta(minutes=5)
@@ -79,4 +81,40 @@ def test_loki_get_streams():
     l = 0
     for stream in loki.iterate_streams('{job="%s"}' % good_job_name, now - timedelta(minutes=30), now, lines_limit=lines_limit):
         l += len(stream.values)
-    assert l >= lines_limit < lines_limit+batch_size
+    assert l >= lines_limit
+    assert l < lines_limit+batch_size
+
+
+@pytest.mark.parametrize('query, result_class',
+                         [
+                             ('{job="%s"}' % good_job_name, LokiStream),
+                             ('{job="%s"}' % good_job_name, LokiStream),
+                             ('count_over_time({job="%s"}[10s])' % good_job_name, LokiVector),
+                             ('sum(count_over_time({job="%s"}[10s]))' % good_job_name, LokiVector)
+                         ])
+def test_loki_query_function_instant(query: str, result_class: Any):
+    loki = Loki(limit=10)
+    res = loki.query(query, time=now)
+    assert isinstance(res[0], result_class)
+
+
+@pytest.mark.parametrize('query, result_class',
+                         [
+                             ('{job="%s"}' % good_job_name, LokiStream),
+                             ('{job="%s"}' % good_job_name, LokiStream),
+                             ('count_over_time({job="%s"}[10s])' % good_job_name, LokiMatrix),
+                             ('sum(count_over_time({job="%s"}[10s]))' % good_job_name, LokiMatrix)
+                         ])
+def test_loki_query_function_range(query: str, result_class: Any):
+    loki = Loki(limit=10)
+    res = loki.query(query, start=some_time_ago, end=now)
+    assert isinstance(res[0], result_class)
+    with pytest.raises(LokiQueryError):
+        loki.query(query, start=now, end=some_time_ago)
+
+@pytest.mark.parametrize('query', ['{}', '{job="%s"}[10s]' % good_job_name])
+def test_loki_query_function_bad_query(query: str):
+    loki = Loki(limit=10)
+    with pytest.raises(LokiQueryError):
+        loki.query(query, time=now)
+        loki.query(query, start=some_time_ago, end=now)

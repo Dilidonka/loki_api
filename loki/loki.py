@@ -242,3 +242,26 @@ class Loki:
             start = last_log_entry[0] + timedelta(microseconds=1)
             if start >= end:
                 break
+
+
+    def query(self, query: str, time: Union[datetime, None] = None, start: Union[datetime, None] = None, end: Union[datetime, None] = None) -> List[Any]:
+        if time:
+            if start or end:
+                raise ValueError('only one of "time" or (start, end) is allowed')
+
+            json_result = self._query(query, time)
+        elif start and end:
+            json_result = self._query_range(query, start, end)
+        else:
+            return list()
+
+        if json_result.get('data'):
+            resultType = json_result['data'].get('resultType')
+            if resultType == 'vector':
+                return LokiVectorResponse(**json_result).data.result
+            elif resultType == 'streams':
+                return LokiStreamsResponse(**json_result).data.result
+            elif resultType == 'matrix':
+                return LokiMatrixResponse(**json_result).data.result
+
+        raise LokiQueryError('No result found')
