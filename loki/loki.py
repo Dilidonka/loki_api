@@ -16,6 +16,7 @@ class LokiDirecton(Enum):
     forward = 'forward'
     backward = 'backward'
 
+
 class LokiConfig(BaseSettings):
     loki_url: str
     loki_http_user: str
@@ -169,7 +170,7 @@ class Loki:
         Perform LogQL log query
 
         :param query: LogQL string like: {job="nginx"}
-        ''' 
+        '''
         json_result = self._query_range(query, start, end)
 
         if json_result.get('data'):
@@ -186,7 +187,7 @@ class Loki:
         :param query: LogQL string like: sum(count_over_time({job="nginx"}[10m]))
         '''
         json_result = self._query_range(query, start, end)
-        print(json_result)
+
         if json_result.get('data'):
             resultType = json_result['data'].get('resultType')
 
@@ -201,7 +202,7 @@ class Loki:
     def iterate_streams(self, logql_query: str, start: datetime, end: datetime, lines_limit: int = 10000):
         '''
         generator, returns batches of log streams
-        
+
         :param query: LogQL string like: 
                         sum(count_over_time({job="nginx"}[10m]))
                         {job="nginx"}
