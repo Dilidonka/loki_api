@@ -2,7 +2,7 @@
 
 ## Usage
 ```
-from loki import Loki
+from loki_api import Loki
 
 now = datetime.now(tz=pytz.timezone('Europe/Moscow'))
 some_time_ago = now - timedelta(minutes=5)

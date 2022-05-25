@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Any
 import pytest
-from loki import Loki, LokiQueryError, LokiStream, LokiMatrix
+from loki_api import Loki, LokiQueryError, LokiStream, LokiMatrix
 import pytz
 
-from loki.models import LokiVector
+from loki_api.models import LokiVector
 
 now = datetime.now(tz=pytz.timezone('Europe/Moscow'))
 some_time_ago = now - timedelta(minutes=5)
