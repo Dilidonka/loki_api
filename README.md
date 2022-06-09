@@ -20,8 +20,8 @@ for s in loki.iterate_streams('{job="%s"}' % good_job_name, now - timedelta(minu
 ```
 
 
-Tested whith python 3.9
+Tested with python 3.10
 
 ## TODO:
-- Use requests.Session() to persist connection
-- Intercept requests connection exceptions <https://docs.python-requests.org/en/latest/user/advanced/>
+- Use requests.Session() to persist connection <https://requests.readthedocs.io/en/master/user/advanced/>
+- Intercept requests connection exceptions
